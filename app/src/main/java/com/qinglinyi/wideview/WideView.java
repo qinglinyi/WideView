@@ -23,6 +23,7 @@ public class WideView extends View {
     private int mBitmapWidth, mBitmapHeight;
 
     private Rect src1, src2, dst1, dst2;
+    private ValueAnimator mAnimator;
 
     public WideView(Context context) {
         super(context);
@@ -63,8 +64,8 @@ public class WideView extends View {
         int height = Math.min(mBitmapHeight, mHeight);
         int width = Math.min(mWidth, mBitmapWidth - position);
 
-        //        System.out.println("mWidth:" + mWidth + ",mBitmapWidth:" + mBitmapWidth + ",curPosition:" +
-        //                curPosition);
+        System.out.println("mWidth:" + mWidth + ",mBitmapWidth:" + mBitmapWidth + ",curPosition:" +
+                curPosition);
 
         src1.set(position, 0, mWidth + position, height);
         dst1.set(0, 0, width, height);
@@ -78,7 +79,7 @@ public class WideView extends View {
         }
     }
 
-    public void begin() {
+    public void start() {
 
         int mul = commonMultiple(mBitmapWidth, getWidth());
 
@@ -86,20 +87,21 @@ public class WideView extends View {
 
         System.out.println("=====scale====" + scale + ",====mul:" + mul);
 
-        ValueAnimator animator = ValueAnimator.ofInt(0, mul);
-        animator.setDuration(scale * 10000);
-        animator.setRepeatCount(ValueAnimator.INFINITE);
-        animator.setRepeatMode(ValueAnimator.RESTART);
-        animator.setInterpolator(new LinearInterpolator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        mAnimator = ValueAnimator.ofInt(0, mul);
+        mAnimator.setDuration(scale * 10000);
+        mAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        mAnimator.setRepeatMode(ValueAnimator.RESTART);
+        mAnimator.setInterpolator(new LinearInterpolator());
+        mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 curPosition = (int) animation.getAnimatedValue();
+                System.out.println("======onAnimationUpdate=======");
                 invalidate();
             }
         });
 
-        animator.start();
+        mAnimator.start();
     }
 
     private static int commonMultiple(int m, int n) {
@@ -128,5 +130,41 @@ public class WideView extends View {
             }
         }
         return 0;
+    }
+
+    public void end() {
+        if (mAnimator != null && mAnimator.isRunning()) {
+            mAnimator.end();
+            mAnimator = null;
+        }
+    }
+
+    public void resume() {
+        if (mAnimator != null) {
+            mAnimator.resume();
+        }
+    }
+
+    public void pause() {
+        if (mAnimator != null) {
+            mAnimator.pause();
+        }
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+
+        if (visibility == View.VISIBLE) {
+            resume();
+        } else {
+            pause();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        end();
     }
 }

@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (mWideView != null) {
-                    mWideView.begin();
+                    mWideView.start();
                 }
             }
         });
